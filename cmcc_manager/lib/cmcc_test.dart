@@ -97,7 +97,7 @@ void main() async {
         data: {
           "item": 1,
         }, options: Options(headers: option.headers));
-    var templeInfo = await getTempleUserInfo(translations);
+    var templeInfo = await getTempleUserInfo();
     print(templeInfo.receiveLightPower);
   } catch (e) {
     print('请求失败: $e');

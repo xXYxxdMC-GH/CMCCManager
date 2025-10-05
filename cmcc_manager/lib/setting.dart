@@ -36,6 +36,17 @@ class AppStorage {
     return prefs.getString("password") ?? 'W5abt#3q';
   }
 
+  static Future<void> setUsername(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("username", username);
+  }
+
+  static Future<String> getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("username") ?? 'user';
+  }
+
+
   static Future<void> setSessionToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString("session_token", token);
@@ -44,5 +55,27 @@ class AppStorage {
   static Future<String> getSessionToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("session_token") ?? '';
+  }
+
+  static Future<void> set2FA(bool needed) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("2fa_authenticate", needed);
+  }
+
+  static Future<bool> get2FA() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool("2fa_authenticate") ?? true;
+  }
+
+  static Future<void> setPattern(List<int> pattern) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('unlock_pattern', pattern.join(','));
+  }
+
+  static Future<List<int>?> getPattern() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('unlock_pattern');
+    if (raw == null) return [4];
+    return raw.split(',').map(int.parse).toList();
   }
 }

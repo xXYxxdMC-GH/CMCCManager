@@ -34,6 +34,8 @@
   "loid_state_not_exist": "LOID不存在",
   "loid_state_password_error": "LOID存在，但是密钥（password）错误",
   "loid_state_conflict": "LOID冲突，即已有该LOID的ONU认证成功。",
+  "setting_page": "设置",
+  "account": "账户",
   "confirm": "确认",
   "services": "服务",
   "language": "切换语言",

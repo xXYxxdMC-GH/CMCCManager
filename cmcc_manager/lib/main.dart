@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:basic_utils/basic_utils.dart';
 import 'package:cmcc_manager/setting.dart';
 import 'package:dio/dio.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -292,7 +293,26 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      theme: isDarkMode
+          ? ThemeData.dark().copyWith(
+        cardTheme: CardTheme(
+          color: Colors.grey[850],
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        scaffoldBackgroundColor: Colors.black,
+      )
+          : ThemeData.light().copyWith(
+        cardTheme: CardTheme(
+          color: Color.fromARGB(255, 255, 255, 255),
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
@@ -306,7 +326,10 @@ class _MyAppState extends State<MyApp> {
             IconButton(
               icon: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
               tooltip: I18n.t('dark_mode'),
-              onPressed: () => setState(() => isDarkMode = !isDarkMode),
+              onPressed: () => setState(() {
+                isDarkMode = !isDarkMode;
+                AppStorage.setDarkMode(isDarkMode);
+              }),
             ),
           ],
           backgroundColor: isDarkMode
@@ -320,15 +343,20 @@ class _MyAppState extends State<MyApp> {
             buildFiberPage(),
             buildGatewayPage(),
             buildDevicesPage(),
+            buildSettingPage()
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: currentPage,
           onTap: _onNavTapped,
+          selectedItemColor: isDarkMode ? Colors.white : Colors.blueAccent,
+          unselectedItemColor: isDarkMode ? Colors.grey[400] : Colors.black54,
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
           items: [
             BottomNavigationBarItem(
               icon: const Icon(Icons.wifi),
               label: I18n.t('fiber_broadband'),
+
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.router),
@@ -338,6 +366,9 @@ class _MyAppState extends State<MyApp> {
               icon: const Icon(Icons.devices),
               label: I18n.t('terminal_devices'),
             ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings),
+              label: I18n.t("setting")),
           ],
         ),
       ),
@@ -402,73 +433,16 @@ class _MyAppState extends State<MyApp> {
         Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 6,
-          margin: const EdgeInsets.all(16),
+          margin: const EdgeInsets.all(2),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("设备性能", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Icon(Icons.memory, color: Colors.blueAccent),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(
-                          width: 80,
-                          height: 80,
-                          child: CircularProgressIndicator(
-                            value: cpuUsage / 100,
-                            strokeWidth: 15,
-                            backgroundColor: Colors.grey[300],
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              _getUsageColor(45),
-                            ),
-                          ),
-                        ),
-                        Text("${cpuUsage.toInt()}%", style: const TextStyle(fontSize: 16)),
-                      ],
-                    ),
-                    const SizedBox(width: 24),
-
-                    Expanded(
-                      child: Column(
-
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                          const Text("内存使用率", style: TextStyle(fontSize: 14)),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: 45 / 100,
-                              minHeight: 12,
-                              backgroundColor: Colors.grey[300],
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                _getUsageColor(45),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text("${5232.0.toInt()}%", style: const TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                HardwareStatusCard(cpuUsage: 59, ramUsage: 20),
 
                 const SizedBox(height: 16),
 
-                // ✅ 端口状态
                 Wrap(
                   spacing: 12,
                   runSpacing: 8,
@@ -504,6 +478,14 @@ class _MyAppState extends State<MyApp> {
           storageAccess: false,
           context: context,
         ),
+      ],
+    );
+  }
+
+  Widget buildSettingPage() {
+    return ListView(
+      children: [
+
       ],
     );
   }
@@ -707,7 +689,7 @@ class FieldItem {
   FieldItem({required this.label, required this.value, this.icon});
 }
 
-class HardwareStatusCard extends StatelessWidget {
+class HardwareStatusCard extends StatefulWidget {
   final double cpuUsage;
   final double ramUsage;
 
@@ -717,6 +699,16 @@ class HardwareStatusCard extends StatelessWidget {
     required this.ramUsage,
   });
 
+  @override
+  State<StatefulWidget> createState() => _HardwareStatusCardState();
+}
+
+class _HardwareStatusCardState extends State<HardwareStatusCard> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   Color _getUsageColor(double value) {
     if (value < 50) return Colors.green;
     if (value < 80) return Colors.orange;
@@ -725,67 +717,78 @@ class HardwareStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("性能概览",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 60,
-                      height: 60,
+    return Padding(
+      padding: const EdgeInsets.all(2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.memory, color: Colors.blueAccent, size: 45,),
+              const SizedBox(width: 8),
+              const Text("性能概览",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  const SizedBox(width: 14,),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: CircularProgressIndicator(
+                          value:  widget.cpuUsage / 100,
+                          strokeWidth: 16,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _getUsageColor(widget.cpuUsage),
+                          ),
+                          backgroundColor: Colors.grey[300],
+                        ),
+                      ),
+                      Text("CPU\n${widget.cpuUsage.toInt()}%",
+                          style: const TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30,),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
                       child: CircularProgressIndicator(
-                        value: cpuUsage / 100,
-                        strokeWidth: 16,
+                        value: widget.ramUsage / 100,
+                        strokeWidth: 26,
+                        backgroundColor: Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _getUsageColor(cpuUsage),
+                          _getUsageColor(widget.ramUsage),
                         ),
                       ),
                     ),
-                    Text("${cpuUsage.toInt()}%",
-                        style: const TextStyle(fontSize: 16)),
-                  ],
-                ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("内存使用率",
-                          style: TextStyle(fontSize: 14)),
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: ramUsage / 100,
-                          minHeight: 12,
-                          backgroundColor: Colors.grey[300],
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            _getUsageColor(ramUsage),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text("${ramUsage.toInt()}%",
-                          style: const TextStyle(fontSize: 12)),
-                    ],
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                  Column(
+                    children: [
+                      Text("Memory", style: const TextStyle(fontSize: 15)),
+                      Text("${widget.cpuUsage.toInt()}%",
+                        style: const TextStyle(fontSize: 15)),
+                    ],
+                  )
+                ],
+              )
+            ]
+          ),
+        ],
       ),
     );
   }

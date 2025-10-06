@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../core/logger.dart';
 import '../../core/setting.dart';
+import '../../core/translate.dart';
 import '../widget/item_widget.dart';
 import '../widget/other_widget.dart';
 import 'change_password_page.dart';
@@ -16,8 +17,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  late TextEditingController _usernameController;
+  final FocusNode _focusNode = FocusNode();
   String username = "";
-  String password = "";
   bool autoLogin = false;
 
   bool bioEnabled = false;
@@ -27,11 +29,18 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     _deliverInfo();
     super.initState();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        AppStorage.setUsername(_usernameController.text.trim());
+      }
+    });
   }
 
   void _deliverInfo() async {
     bioEnabled = await AppStorage.getBiometricEnabled();
     twoFactorEnabled = await AppStorage.get2FA();
+    username = await AppStorage.getUsername();
+    _usernameController = TextEditingController(text: username);
   }
 
   @override
@@ -43,21 +52,24 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           SettingsSection(
             icon: Icons.person,
-            title: "用户设置",
+            title: I18n.t('section_user_settings'),
             children: [
               SettingsItem(
                 icon: Icons.account_circle,
-                label: "名称",
-                subtitle: "用于登录后台",
+                label: I18n.t('label_username'),
+                subtitle: I18n.t('subtitle_username'),
                 trailing: SizedBox(
                   width: 160,
                   child: TextField(
-                    controller: TextEditingController(text: username),
-                    onChanged: (v) => setState(() => username = v),
+                    controller: _usernameController,
+                    focusNode: _focusNode,
+                    onChanged: (v) => setState(()  {
+                      username = v;
+                    }),
                     style: TextStyle(color: theme.textTheme.bodyMedium?.color),
-                    decoration: const InputDecoration(
-                      hintText: "请输入名称",
-                      hintStyle: TextStyle(color: Colors.white54),
+                    decoration: InputDecoration(
+                      hintText: I18n.t('hint_enter_username'),
+                      hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
                       border: InputBorder.none,
                     ),
                   ),
@@ -65,10 +77,10 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               SettingsItem(
                 icon: Icons.lock,
-                label: "更改密码",
-                subtitle: "需要验证当前密码",
+                label: I18n.t('label_change_password'),
+                subtitle: I18n.t('subtitle_change_password'),
                 trailing: IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                  icon: Icon(Icons.arrow_forward_ios, color: theme.iconTheme.color),
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => ChangePasswordPage()));
                   },
@@ -79,38 +91,45 @@ class _SettingsPageState extends State<SettingsPage> {
 
           SettingsSection(
             icon: Icons.settings,
-            title: "APP 设置",
+            title: I18n.t('section_app_settings'),
             children: [
               SettingsItem(
                 icon: Icons.article,
-                label: "日志记录",
-                subtitle: "记录关键操作与异常信息",
-                trailing: IconButton(onPressed: () =>
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => LogViewer())),
-                    icon: Icon(Icons.arrow_forward_ios)),
+                label: I18n.t('label_log_record'),
+                subtitle: I18n.t('subtitle_log_record'),
+                trailing: IconButton(
+                  icon: Icon(Icons.arrow_forward_ios, color: theme.iconTheme.color,),
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LogViewer())),
+                ),
               ),
               SettingsItem(
                 icon: Icons.fingerprint,
-                label: "生物验证",
-                subtitle: "支持指纹或面容识别",
+                label: I18n.t('label_biometric_auth'),
+                subtitle: I18n.t('subtitle_biometric_auth'),
                 trailing: Switch(
                   value: bioEnabled,
-                  onChanged: (v) => setState(() => bioEnabled = v),
+                  onChanged: (v) async {
+                    setState(() => bioEnabled = v);
+                    await AppStorage.setBiometricEnabled(v);
+                  },
                 ),
               ),
               SettingsItem(
                 icon: Icons.verified_user,
-                label: "二次验证开关",
-                subtitle: "启用后进入敏感区域需验证",
+                label: I18n.t('label_two_factor_switch'),
+                subtitle: I18n.t('subtitle_two_factor_switch'),
                 trailing: Switch(
                   value: twoFactorEnabled,
-                  onChanged: (v) => setState(() => twoFactorEnabled = v),
+                  onChanged: (v) async {
+                    setState(() => twoFactorEnabled = v);
+                    await AppStorage.set2FA(v);
+                  },
                 ),
               ),
               SettingsItem(
                 icon: Icons.grid_on,
-                label: "二次验证密码",
-                subtitle: "用于图案验证，默认点击中间点可解锁",
+                label: I18n.t('label_pattern_password'),
+                subtitle: I18n.t('subtitle_pattern_password'),
                 trailing: IconButton(
                   icon: Icon(Icons.arrow_forward_ios, color: theme.iconTheme.color),
                   onPressed: () {
@@ -120,42 +139,36 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ],
           ),
+
           SettingsSection(
             icon: Icons.info,
-            title: "关于",
+            title: I18n.t('section_about'),
             children: [
-              // 版本信息
               SettingsItem(
                 icon: Icons.tag,
-                label: "版本号",
+                label: I18n.t('label_version'),
                 subtitle: "v1.0.0",
                 trailing: const SizedBox.shrink(),
               ),
-
-              // 免责声明
               SettingsItem(
                 icon: Icons.warning,
-                label: "免责声明",
-                subtitle: "本应用仅供学习与交流使用",
+                label: I18n.t('label_disclaimer'),
+                subtitle: I18n.t('subtitle_disclaimer'),
                 trailing: const SizedBox.shrink(),
               ),
-
-              // GitHub 主页
               SettingsItem(
                 icon: Icons.person_pin,
-                label: "作者 GitHub",
-                subtitle: "查看作者主页",
+                label: I18n.t('label_author_github'),
+                subtitle: I18n.t('subtitle_author_github'),
                 trailing: IconButton(
                   icon: Icon(Icons.open_in_new, color: theme.iconTheme.color),
                   onPressed: () => launchUrlString("https://github.com/xXYxxdMC-GH"),
                 ),
               ),
-
-              // 项目仓库
               SettingsItem(
                 icon: Icons.code,
-                label: "项目仓库",
-                subtitle: "查看源代码与更新",
+                label: I18n.t('label_project_repo'),
+                subtitle: I18n.t('subtitle_project_repo'),
                 trailing: IconButton(
                   icon: Icon(Icons.open_in_new, color: theme.iconTheme.color),
                   onPressed: () => launchUrlString("https://github.com/xXYxxdMC-GH/CMCCManager"),
@@ -163,7 +176,6 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ],
           ),
-
         ],
       ),
     );

@@ -71,19 +71,19 @@ class _LoginPageState extends State<LoginPage> {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("重新设置密码"),
+          title: Text(I18n.t('reset_password_title')),
           content: TextField(
             controller: controller,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: "新密码",
+            decoration: InputDecoration(
+              labelText: I18n.t('new_password'),
               border: OutlineInputBorder(),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("取消"),
+              child: Text(I18n.t('cancel')),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -93,12 +93,12 @@ class _LoginPageState extends State<LoginPage> {
                   if (context.mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("密码已更新")),
+                      SnackBar(content: Text(I18n.t('password_updated'))),
                     );
                   }
                 }
               },
-              child: const Text("确认"),
+              child: Text(I18n.t('confirm')),
             ),
           ],
         ),
@@ -123,8 +123,8 @@ class _LoginPageState extends State<LoginPage> {
             ),
             content: Text(
               error == 2
-                  ? "有其他用户正在配置，请稍后再尝试。"
-                  : "出现未知错误",
+                  ? I18n.t('other_user_configuring')
+                  : I18n.t('unknown_error'),
               style: TextStyle(
                 fontSize: 16,
                 color: isDarkMode ? Colors.white70 : Colors.black87,

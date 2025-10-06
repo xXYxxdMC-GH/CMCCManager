@@ -18,7 +18,7 @@ final GlobalKey<InfoCardState> cardKey1 = GlobalKey();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await I18n.load('zh_cn');
+  await I18n.load(await AppStorage.getLanguage());
   isDarkMode = await AppStorage.getDarkMode();
   password = await AppStorage.getPassword();
   patter = await AppStorage.getPattern() ?? [5];
@@ -66,6 +66,7 @@ class _CMCCManagerState extends State<CMCCManager> {
     String newLocale = I18n.currentLocale == 'zh_cn' ? 'en_us' : 'zh_cn';
     await I18n.load(newLocale);
     setState(() {});
+    await AppStorage.setLanguage(newLocale);
   }
 
   void _onPageChanged(int index) {
@@ -118,11 +119,11 @@ class _CMCCManagerState extends State<CMCCManager> {
         appBar: AppBar(
           title: Text(I18n.t('cmcc_gm220_s')),
           actions: [
-            //IconButton(
-            //  icon: Icon(Icons.language),
-            //  tooltip: I18n.t('language'),
-            //  onPressed: switchLanguage,
-            //),
+            IconButton(
+              icon: Icon(Icons.language),
+              tooltip: I18n.t('language'),
+              onPressed: switchLanguage,
+            ),
             IconButton(
               icon: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
               tooltip: I18n.t('dark_mode'),
@@ -166,7 +167,7 @@ class _CMCCManagerState extends State<CMCCManager> {
             ),
             BottomNavigationBarItem(
                 icon: const Icon(Icons.settings),
-                label: "设置"),
+                label: I18n.t('setting')),
           ],
         ),
       ),

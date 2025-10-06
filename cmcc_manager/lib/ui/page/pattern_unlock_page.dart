@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pattern_lock/pattern_lock.dart';
 
+import '../../core/translate.dart';
 import '../../global.dart';
 import 'login_page.dart';
 
@@ -13,12 +14,14 @@ class PatternUnlockPage extends StatefulWidget {
 
 class _PatternUnlockPageState extends State<PatternUnlockPage> {
   final List<int> _correctPattern = patter;
-  String _status = '请绘制解锁图案';
+  String _status = I18n.t('pattern_unlock_prompt');
 
   void _onPatternCompleted(List<int> input) {
     final isMatch = input.join() == _correctPattern.join();
     setState(() {
-      _status = isMatch ? '解锁成功' : '图案错误';
+      _status = isMatch
+          ? I18n.t('pattern_unlock_success')
+          : I18n.t('pattern_unlock_failed');
     });
 
     if (isMatch) {
@@ -53,7 +56,7 @@ class _PatternUnlockPageState extends State<PatternUnlockPage> {
               Icon(Icons.lock, size: 100, color: theme.iconTheme.color),
               const SizedBox(height: 24),
               Text(
-                '图案解锁',
+                I18n.t('pattern_unlock_title'),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,

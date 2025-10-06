@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pattern_lock/pattern_lock.dart';
 
 import '../../core/setting.dart';
+import '../../core/translate.dart';
 
 class PatternLockSetupPage extends StatefulWidget {
   const PatternLockSetupPage({super.key});
@@ -19,7 +20,7 @@ class _PatternLockSetupPageState extends State<PatternLockSetupPage> {
     if (input.length < minPatternLength) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("图案至少包含 4 个点")),
+        SnackBar(content: Text(I18n.t('pattern_too_short'))),
       );
       return;
     }
@@ -30,35 +31,47 @@ class _PatternLockSetupPageState extends State<PatternLockSetupPage> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text("图案已保存：${input.join('-')}")));
+      ..showSnackBar(SnackBar(content: Text("${I18n.t('pattern_saved')}: ${input.join('-')}")));
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final patternSize = screenWidth * 0.7;
+
     return Scaffold(
-        appBar: AppBar(title: const Text("设置图案密码")),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("请绘制图案密码", style: TextStyle(fontSize: 18)),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: 300,
-                height: 300,
-                child: PatternLock(
-                  selectedColor: Colors.blueAccent,
-                  notSelectedColor: Colors.grey.shade400,
-                  dimension: 3,
-                  relativePadding: 0.3,
-                  showInput: true,
-                  onInputComplete: onPatternEntered,
-                ),
-              )
-            ],
-          ),
-        )
+      appBar: AppBar(title: Text(I18n.t('set_pattern_password'))),
+      body: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxHeight = constraints.maxHeight;
+            final patternSize = maxHeight * 0.5;
+
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.grid_on, size: 48, color: Theme.of(context).iconTheme.color),
+                  const SizedBox(height: 16),
+                  Text(I18n.t('draw_pattern_prompt'), style: const TextStyle(fontSize: 18)),
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    width: patternSize,
+                    height: patternSize,
+                    child: PatternLock(
+                      selectedColor: Colors.blueAccent,
+                      notSelectedColor: Colors.grey.shade400,
+                      dimension: 3,
+                      relativePadding: 0.3,
+                      showInput: true,
+                      onInputComplete: onPatternEntered,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
     );
   }
+
 }

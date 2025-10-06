@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:cmcc_manager/core/translate.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -123,7 +124,7 @@ class _LogViewerState extends State<LogViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("日志")),
+      appBar: AppBar(title: Text(I18n.t('log'))),
       body: RefreshIndicator(
         onRefresh: _loadLogs,
         child: ListView.builder(

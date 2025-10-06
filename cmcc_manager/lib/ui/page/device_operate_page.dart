@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/translate.dart';
 import '../../utils/network_utils.dart';
 import '../widget/card_widget.dart';
 import '../widget/info_widget.dart';
@@ -44,7 +45,6 @@ class DeviceOperatePageState extends State<DeviceOperatePage> with AutomaticKeep
     }
   }
 
-
   @override
   void dispose() {
     timer.cancel();
@@ -67,17 +67,17 @@ class DeviceOperatePageState extends State<DeviceOperatePage> with AutomaticKeep
 
   String getName(String name, String ip) {
     if (name.contains("HUAWEI_MatePad")) {
-      return "华为MatePad";
+      return I18n.t("device_huawei_matepad");
     } else if (name.contains("vivo-X50")) {
-      return "VIVO X50";
+      return I18n.t("device_vivo_x50");
     } else if (name.contains("magic")) {
-      return "荣耀Magic6";
+      return I18n.t("device_honor_magic6");
     } else if (name.contains("ALN")) {
-      return "华为Mate60";
+      return I18n.t("device_huawei_mate60");
     } else if (name == "anonymous" && ip == "192.168.1.9") {
-      return "电视";
+      return I18n.t("device_tv");
     } else if (name.contains("YR1901G")) {
-      return "路由器";
+      return I18n.t("device_router");
     } else {
       return "";
     }

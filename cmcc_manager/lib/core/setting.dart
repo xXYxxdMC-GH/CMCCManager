@@ -11,6 +11,16 @@ class AppStorage {
     return prefs.getBool("isDarkMode") ?? false;
   }
 
+  static Future<void> setLanguage(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("language", value);
+  }
+
+  static Future<String> getLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("language") ?? "zh_cn";
+  }
+
   static Future<void> setToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString("userToken", token);
@@ -19,11 +29,6 @@ class AppStorage {
   static Future<String> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("userToken") ?? '';
-  }
-
-  static Future<void> clearAll() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
   }
 
   static Future<void> setPassword(String password) async {
@@ -45,7 +50,6 @@ class AppStorage {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("username") ?? 'user';
   }
-
 
   static Future<void> setSessionToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -87,5 +91,10 @@ class AppStorage {
     final raw = prefs.getString('unlock_pattern');
     if (raw == null) return [4];
     return raw.split(',').map(int.parse).toList();
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 }

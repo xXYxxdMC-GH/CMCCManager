@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/translate.dart';
 import '../../global.dart';
 import '../../main.dart';
 import '../../utils/network_utils.dart';
@@ -268,7 +272,7 @@ class _DeviceInfoCardState extends State<DeviceInfoCard> with TickerProviderStat
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("MAC 物理地址",
+                        Text(I18n.t('mac_address'),
                             style: theme.textTheme.labelSmall?.copyWith(color: theme.hintColor)),
                         const SizedBox(height: 4),
                         Text(widget.info.mac,
@@ -283,8 +287,8 @@ class _DeviceInfoCardState extends State<DeviceInfoCard> with TickerProviderStat
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildSwitchRow(context, '外网访问', widget.info.mac, 0, widget.info.internetAccess, widget.info.storageAccess),
-                _buildSwitchRow(context, '存储访问', widget.info.mac, 1, widget.info.internetAccess, widget.info.storageAccess),
+                _buildSwitchRow(context, I18n.t('internet_access'), widget.info.mac, 0, widget.info.internetAccess, widget.info.storageAccess),
+                _buildSwitchRow(context, I18n.t('storage_access'), widget.info.mac, 1, widget.info.internetAccess, widget.info.storageAccess),
               ],
             ),
           ],
@@ -350,9 +354,39 @@ class HardwareStatusCard extends StatefulWidget {
 }
 
 class _HardwareStatusCardState extends State<HardwareStatusCard> {
+  final List<FlSpot> _cpuData = [];
+  final List<FlSpot> _ramData = [];
+  int _tick = 0;
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
+    _startMonitoring();
+  }
+
+  void _startMonitoring() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final cpu = widget.cpuUsage;
+      final ram = widget.ramUsage;
+
+      setState(() {
+        _tick++;
+        _addData(_cpuData, FlSpot(_tick.toDouble(), cpu));
+        _addData(_ramData, FlSpot(_tick.toDouble(), ram));
+      });
+    });
+  }
+
+  void _addData(List<FlSpot> list, FlSpot spot) {
+    list.add(spot);
+    if (list.length > 30) list.removeAt(0);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Color _getUsageColor(double value) {
@@ -399,6 +433,89 @@ class _HardwareStatusCardState extends State<HardwareStatusCard> {
     );
   }
 
+  Widget buildUsageCard(String label, double value) {
+    return Row(
+      children: [
+        _buildCircularIndicator(label: label, value: value, size: 60, strokeWidth: 12),
+        const SizedBox(width: 16),
+        Expanded(child: _buildLineChart(label)),
+      ],
+    );
+  }
+
+  void showUsageOverlay(BuildContext context, Widget cardContent) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (context) => GestureDetector(
+        onTap: () => entry.remove(),
+        child: Stack(
+          children: [
+            Container(
+              color: Colors.black.withAlpha(128),
+            ),
+            Center(
+              child: GestureDetector(
+                onTap: () {},
+                child: Material(
+                  elevation: 12,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 320,
+                    height: 200,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: cardContent,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    overlay.insert(entry);
+  }
+
+  Widget _buildLineChart(String label) {
+    final data = label == "CPU" ? _cpuData : _ramData;
+
+    return LineChart(
+      LineChartData(
+        titlesData: FlTitlesData(
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, _) => Text("T${value.toInt()}"),
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, _) => Text("${value.toInt()}%"),
+            ),
+          ),
+        ),
+        gridData: FlGridData(show: true),
+        borderData: FlBorderData(show: true),
+        lineBarsData: [
+          LineChartBarData(
+            spots: data,
+            isCurved: true,
+            color: Colors.blueAccent,
+            barWidth: 3,
+            dotData: FlDotData(show: false),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPortStatus({
     required IconData icon,
     required String label,
@@ -426,10 +543,10 @@ class _HardwareStatusCardState extends State<HardwareStatusCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Icon(Icons.memory, color: Colors.blueAccent, size: 45),
               SizedBox(width: 8),
-              Text("性能概览",
+              Text(I18n.t('performance_overview'),
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -437,22 +554,18 @@ class _HardwareStatusCardState extends State<HardwareStatusCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildCircularIndicator(
-                label: "CPU",
-                value: widget.cpuUsage,
-                size: 80,
-                strokeWidth: 16,
+              GestureDetector(
+                onTap: () => showUsageOverlay(context, buildUsageCard("CPU", widget.cpuUsage)),
+                child: _buildCircularIndicator(label: "CPU", value: widget.cpuUsage, size: 80, strokeWidth: 16),
               ),
-              _buildCircularIndicator(
-                label: "Memory",
-                value: widget.ramUsage,
-                size: 100,
-                strokeWidth: 26,
+              GestureDetector(
+                onTap: () => showUsageOverlay(context, buildUsageCard("Memory", widget.ramUsage)),
+                child: _buildCircularIndicator(label: "Memory", value: widget.ramUsage, size: 100, strokeWidth: 26),
               ),
             ],
           ),
           const SizedBox(height: 30),
-          const Text("接口状态",
+          Text(I18n.t('interface_status'),
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           Column(
@@ -460,7 +573,7 @@ class _HardwareStatusCardState extends State<HardwareStatusCard> {
             children: [
               _buildPortStatus(
                 icon: Icons.wifi_tethering,
-                label: "光口",
+                label: I18n.t('optical_port'),
                 isConnected: widget.sfpConnected,
               ),
               const SizedBox(height: 6),
@@ -471,7 +584,7 @@ class _HardwareStatusCardState extends State<HardwareStatusCard> {
                   for (int i = 0; i < widget.ethStatus.length; i++)
                     _buildPortStatus(
                       icon: Icons.settings_ethernet,
-                      label: "网口 ${i + 1}",
+                      label: "${I18n.t('ethernet_port')} ${i + 1}",
                       isConnected: widget.ethStatus[i],
                     ),
                 ],

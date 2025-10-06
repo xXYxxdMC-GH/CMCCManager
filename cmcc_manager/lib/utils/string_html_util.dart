@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:pointycastle/asymmetric/pkcs1.dart';
 import 'package:pointycastle/asymmetric/rsa.dart';
 
+import '../core/translate.dart';
 import '../global.dart';
 import '../ui/widget/info_widget.dart';
 
@@ -156,7 +157,7 @@ Map<String, bool> extractPortStatus(String rawHtml) {
     final block = match.group(0)!;
 
     final nameMatch = RegExp(r'>([^<>]+)</font>').firstMatch(block);
-    final name = nameMatch?.group(1) ?? '未知端口';
+    final name = nameMatch?.group(1) ?? I18n.t('unknown_port');
 
     final connected = block.contains('green') || block.contains('blue');
 

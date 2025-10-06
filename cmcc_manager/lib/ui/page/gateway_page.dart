@@ -25,12 +25,12 @@ class _GatewayPageState extends State<GatewayPage> with AutomaticKeepAliveClient
     'macAddress': '--',
     'deviceId': '--',
     'ports': {
-      '光口': false,
-      '网口1': false,
-      '网口2': false,
-      '网口3': false,
-      '网口4': false,
-      'USB1': false,
+      'optical': false,
+      'ethernet1': false,
+      'ethernet2': false,
+      'ethernet3': false,
+      'ethernet4': false,
+      'usb1': false,
     },
   };
 
@@ -63,7 +63,7 @@ class _GatewayPageState extends State<GatewayPage> with AutomaticKeepAliveClient
     super.build(context);
     List<bool> ethStatusList = [];
     for (String key in (snapshot['ports'] as Map<String, dynamic>).keys) {
-      if (key.contains("网口")) {
+      if (key.contains("ethernet")) {
         ethStatusList.add(snapshot['ports'][key]);
       }
     }
@@ -79,7 +79,7 @@ class _GatewayPageState extends State<GatewayPage> with AutomaticKeepAliveClient
               child: HardwareStatusCard(
                 cpuUsage: snapshot['cpuUsage'] as double,
                 ramUsage: snapshot['ramUsage'] as double,
-                sfpConnected: snapshot['ports']['光口'],
+                sfpConnected: snapshot['ports']['optical'],
                 ethStatus: ethStatusList,
                 usbConnected: snapshot['ports']['USB1'],
               )

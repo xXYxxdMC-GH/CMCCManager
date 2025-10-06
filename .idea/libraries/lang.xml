@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="lang">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/cmcc_manager/build/app/intermediates/compressed_assets/debug/out/assets/flutter_assets/assets/lang/en_us.json.jar!/" />
+      <root url="jar://$PROJECT_DIR$/cmcc_manager/build/app/intermediates/compressed_assets/debug/out/assets/flutter_assets/assets/lang/zh_cn.json.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

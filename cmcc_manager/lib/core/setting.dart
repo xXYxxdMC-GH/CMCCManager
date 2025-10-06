@@ -64,7 +64,17 @@ class AppStorage {
 
   static Future<bool> get2FA() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool("2fa_authenticate") ?? true;
+    return prefs.getBool("2fa_authenticate") ?? false;
+  }
+
+  static Future<void> setBiometricEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("biometric_enabled", enabled);
+  }
+
+  static Future<bool> getBiometricEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool("biometric_enabled") ?? true;
   }
 
   static Future<void> setPattern(List<int> pattern) async {

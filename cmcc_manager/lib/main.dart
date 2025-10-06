@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cmcc_manager/core/logger.dart';
 import 'package:cmcc_manager/core/setting.dart';
 import 'package:cmcc_manager/ui/page/auth_shield_page.dart';
@@ -28,7 +26,7 @@ void main() async {
   sessionToken = await AppStorage.getSessionToken();
   logger = await AppLogger.getInstance();
   await logger.clearLogs();
-  if (kIsWeb || !Platform.isAndroid) {
+  if (kIsWeb) {
     runApp(MaterialApp(home: CMCCManager()));
   } else if (await AppStorage.getBiometricEnabled()) {
     runApp(MaterialApp(home: AuthShieldPage()));

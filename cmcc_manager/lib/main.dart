@@ -26,9 +26,7 @@ void main() async {
   sessionToken = await AppStorage.getSessionToken();
   logger = await AppLogger.getInstance();
   await logger.clearLogs();
-  if (kIsWeb) {
-    runApp(MaterialApp(home: CMCCManager()));
-  } else if (await AppStorage.getBiometricEnabled()) {
+  if (await AppStorage.getBiometricEnabled() && !kIsWeb) {
     runApp(MaterialApp(home: AuthShieldPage()));
   } else {
     runApp(MaterialApp(home: LoginPage()));

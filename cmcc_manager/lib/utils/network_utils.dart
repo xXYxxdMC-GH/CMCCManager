@@ -51,6 +51,10 @@ Future<int> simulateAuth() async {
       ),
     );
 
+    if (response.statusCode != 200) {
+      return -1;
+    }
+
     var data = response.data.toString();
     if (data.contains("<title>GM220-S</title>") &&
         !data.contains("function set_online_token()")) {

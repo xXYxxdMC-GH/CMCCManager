@@ -33,9 +33,10 @@ class _LoginPageState extends State<LoginPage> {
           setState(() {
             failCount++;
           });
+          error = -1;
           break;
         case 0:
-          error = 1;
+          error = 0;
           setState(() {
             failCount++;
           });

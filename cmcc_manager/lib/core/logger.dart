@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:cmcc_manager/core/translate.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -19,6 +20,7 @@ class AppLogger {
   }
 
   Future<void> _init() async {
+    if (kIsWeb) return;
     final dir = await getApplicationDocumentsDirectory();
     _logFile = File('${dir.path}/app_log.json');
     if (!await _logFile.exists()) {
@@ -28,6 +30,7 @@ class AppLogger {
   }
 
   Future<void> log(String message, {LogLevel level = LogLevel.info}) async {
+    if (kIsWeb) return;
     final entry = LogEntry(timestamp: DateTime.now(), message: message, level: level);
     final logs = await getLogs();
     logs.add(entry);
@@ -48,6 +51,7 @@ class AppLogger {
   }
 
   Future<void> clearLogs() async {
+    if (kIsWeb) return;
     await _logFile.writeAsString(jsonEncode([]));
   }
 
